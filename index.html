@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="AlmostMet - Location-based anonymous social space to share views, feelings, dress codes, and connect with people nearby.">
+    <title>AlmostMet | Connect in the Dark, Meet in the Light</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Poppins Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- 1. LANDING SCREEN -->
+    <div id="screen-landing" class="screen landing-screen active">
+        <nav class="landing-nav">
+            <div class="logo">Almost<span>Met</span></div>
+            <div class="nav-links">
+                <a href="#story" onclick="document.getElementById('story').scrollIntoView({behavior: 'smooth'}); return false;">About</a>
+                <a href="#safety" onclick="document.getElementById('safety').scrollIntoView({behavior: 'smooth'}); return false;">Safety</a>
+                <a href="#" onclick="app.navigateTo('auth'); return false;">Login</a>
+            </div>
+        </nav>
+
+        <section class="landing-hero">
+            <div class="overlay"></div>
+            <div class="hero-content">
+                <p class="story">
+                    You saw someone.
+                    <br>
+                    At a café.
+                    <br>
+                    At a bookstore.
+                    <br>
+                    At a park.
+                </p>
+                <div class="brand-wrapper">
+                    <h1 class="brand-logo">Almost<span>Met</span></h1>
+                    <div id="particles"></div>
+                </div>
+                <h2 class="main-title">The Conversation You Never Started.</h2>
+                <p class="subtitle">
+                    Discover people nearby who are open to connecting.<br>
+                    No phone numbers. No awkward introductions. Just a wave away.
+                </p>
+            </div>
+        </section>
+
+        <section class="story-section" id="story">
+            <div class="container">
+                <h2>Maybe They Noticed You Too.</h2>
+                <p>
+                    Maybe they were waiting.<br>
+                    Maybe both of you walked away wondering the same thing.
+                </p>
+            </div>
+        </section>
+
+        <section class="map-preview">
+            <h2>Live Nearby Vibes</h2>
+            <div class="mock-map-container">
+                <div class="map-dot-user one">
+                    <span class="dot-avatar">📖</span>
+                    <span class="dot-label">Sarah</span>
+                    <span class="pulse-dot green"></span>
+                </div>
+                <div class="map-dot-user two">
+                    <span class="dot-avatar">☕</span>
+                    <span class="dot-label">Alex</span>
+                    <span class="pulse-dot orange"></span>
+                </div>
+                <div class="map-dot-user three">
+                    <span class="dot-avatar">🎧</span>
+                    <span class="dot-label">Emma</span>
+                    <span class="pulse-dot blue"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="vibes">
+            <h2>Express Your Vibe</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>🎨 Mood Color</h3>
+                    <p>Show how you're feeling.</p>
+                </div>
+                <div class="card">
+                    <h3>🎧 Interests</h3>
+                    <p>Music, coffee, books and more.</p>
+                </div>
+                <div class="card">
+                    <h3>📍 Activity</h3>
+                    <p>What you're doing right now.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="privacy">
+            <h2>Your Location Stays Yours</h2>
+            <p>
+                Nobody sees your exact location.<br>
+                Only a safe nearby area.
+            </p>
+        </section>
+
+        <section class="wave">
+            <h2>Wave First <span class="waving-hand">👋</span></h2>
+            <p>
+                Alex waved. You waved back. Chat unlocked.
+            </p>
+        </section>
+
+        <section class="ghost" id="ghost-section">
+            <h2>Ghost Mode 👻</h2>
+            <div class="toggle-switch-wrapper" onclick="this.classList.toggle('active'); document.getElementById('ghost-section').classList.toggle('ghost-active')">
+                <div class="toggle-switch-dot"></div>
+            </div>
+            <p class="ghost-desc">Disappear instantly. No one sees you.</p>
+            <p class="ghost-status">Status: <span id="ghost-landing-status">Visible</span></p>
+        </section>
+
+        <section class="safety" id="safety">
+            <h2>Safety First</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>🛡️ Verified Identity</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; font-weight: normal; line-height: 1.4;">
+                        Optional quick verification ensures you only interact with real people in your neighborhood, keeping bots and spam out.
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>🚫 Instant Block</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; font-weight: normal; line-height: 1.4;">
+                        Instantly block any user. Once blocked, your profile and location vibes completely disappear from their map.
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>⚠️ Crisp Reporting</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; font-weight: normal; line-height: 1.4;">
+                        Flag inappropriate thoughts or dress code clues. Abusive vibes are hidden immediately, and offenders are permanently removed.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta">
+            <h2>Every Meaningful Connection Starts With A Moment.</h2>
+            <button class="btn-primary" onclick="app.navigateTo('auth')">
+                Join AlmostMet
+            </button>
+        </section>
+
+        <footer class="landing-footer">
+            &copy; 2026 AlmostMet
+        </footer>
+    </div>
+
+    <!-- 2. AUTHENTICATION/LOGIN SCREEN -->
+    <div id="screen-auth" class="screen auth-screen">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Create Your Alias</h2>
+                <p>No credentials needed. Define your anonymous presence.</p>
+            </div>
+            
+            <div class="auth-form">
+                <!-- Gender Vibe Selection -->
+                <div class="form-group">
+                    <label>Gender Vibe (For name rolling)</label>
+                    <div style="display: flex; gap: 8px;" id="gender-selector">
+                        <button class="btn-secondary gender-select active" style="flex: 1; padding: 10px 0; font-size: 0.85rem;" data-gender="secret">👤 Secret</button>
+                        <button class="btn-secondary gender-select" style="flex: 1; padding: 10px 0; font-size: 0.85rem;" data-gender="male">👦 Male</button>
+                        <button class="btn-secondary gender-select" style="flex: 1; padding: 10px 0; font-size: 0.85rem;" data-gender="female">👧 Female</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Anonymous Nickname</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="username" placeholder="e.g. Mamasita" style="flex: 1;">
+                        <button class="btn-secondary" id="btn-roll-name" style="padding: 0 15px;" title="Roll a random name">
+                            <i data-lucide="dice-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="anon-customizer">
+                    <span class="customizer-title">Select Anime Avatar</span>
+                    <div class="customizer-preview">
+                        <div class="avatar-preview-box" id="avatar-preview" style="background-color: var(--primary); padding: 0; overflow: hidden; border-radius: 50%; border: 2px solid white; width: 68px; height: 68px;">
+                            <img src="assets/avatar_male_1.jpg" id="avatar-preview-img" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Anime Avatars Grid Selector -->
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn-icon avatar-select active" style="width:40px; height:40px; padding:0; overflow:hidden; border-radius: 50%;" data-src="assets/avatar_male_1.jpg">
+                                    <img src="assets/avatar_male_1.jpg" style="width:100%; height:100%; object-fit:cover;">
+                                </button>
+                                <button class="btn-icon avatar-select" style="width:40px; height:40px; padding:0; overflow:hidden; border-radius: 50%;" data-src="assets/avatar_female_1.jpg">
+                                    <img src="assets/avatar_female_1.jpg" style="width:100%; height:100%; object-fit:cover;">
+                                </button>
+                                <button class="btn-icon avatar-select" style="width:40px; height:40px; padding:0; overflow:hidden; border-radius: 50%;" data-src="assets/avatar_male_2.jpg">
+                                    <img src="assets/avatar_male_2.jpg" style="width:100%; height:100%; object-fit:cover;">
+                                </button>
+                                <button class="btn-icon avatar-select" style="width:40px; height:40px; padding:0; overflow:hidden; border-radius: 50%;" data-src="assets/avatar_female_2.jpg">
+                                    <img src="assets/avatar_female_2.jpg" style="width:100%; height:100%; object-fit:cover;">
+                                </button>
+                            </div>
+                            <!-- Color Selector dots -->
+                            <div class="avatar-color-options">
+                                <div class="color-dot active" style="background-color: #ff2a74;" data-color="#ff2a74"></div>
+                                <div class="color-dot" style="background-color: #7c3aed;" data-color="#7c3aed"></div>
+                                <div class="color-dot" style="background-color: #2563eb;" data-color="#2563eb"></div>
+                                <div class="color-dot" style="background-color: #059669;" data-color="#059669"></div>
+                                <div class="color-dot" style="background-color: #d97706;" data-color="#d97706"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="btn-enter-space" style="margin-top: 10px;">Enter AlmostMet</button>
+                <button class="btn-secondary" onclick="app.navigateTo('landing')">Back to Landing</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. DASHBOARD / MAP VIEW SCREEN -->
+    <div id="screen-dashboard" class="screen dashboard-screen">
+        
+        <!-- Sidebar (Left) - Desktop Only -->
+        <aside class="sidebar desktop-only">
+            <div class="sidebar-header">
+                <div class="user-profile-summary">
+                    <div class="user-avatar-circle" id="sidebar-user-avatar" style="background-color: var(--primary);">👽</div>
+                    <div class="user-meta-info">
+                        <span class="user-anon-name" id="sidebar-user-name">AnonUser</span>
+                        <span class="user-status-text">Active Nearby</span>
+                    </div>
+                </div>
+                <div class="sidebar-actions">
+                    <button class="btn-icon" id="btn-log-out" title="Leave Space">
+                        <i data-lucide="log-out"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" id="tab-chats" onclick="app.switchTab('chats')">Conversations</button>
+                <button class="tab-btn" id="tab-vibes" onclick="app.switchTab('vibes')">Nearby Vibes</button>
+            </div>
+
+            <!-- Sidebar scroll content -->
+            <div class="sidebar-content">
+                <!-- Panel 1: Chats -->
+                <div class="sidebar-panel active" id="panel-chats">
+                    <div class="chats-list" id="chats-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                    <div class="empty-state" id="chats-empty-state">
+                        <i data-lucide="message-square-dashed"></i>
+                        <p>No active conversations.<br>Select a user on the map to start talking privately.</p>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Vibes Feed -->
+                <div class="sidebar-panel" id="panel-vibes">
+                    <div class="vibes-list" id="vibes-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                    <div class="empty-state" id="vibes-empty-state" style="display: none;">
+                        <i data-lucide="radar"></i>
+                        <p>No vibes nearby.<br>Be the first to share what you're feeling!</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <!-- Map Target -->
+            <div id="map"></div>
+
+            <!-- Mobile Top Bar (AlmostMet logo + ghost toggle) -->
+            <div class="mobile-top-bar">
+                <div class="mobile-logo">Almost<span>Met</span></div>
+                <div class="mobile-top-actions">
+                    <button class="btn-icon map-control-btn" id="btn-dashboard-ghost" title="Ghost Mode">
+                        <i data-lucide="ghost"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Floating Action Bar (Filter Tags) -->
+            <div class="floating-action-bar">
+                <div class="floating-pill active" data-filter="all">All Vibes</div>
+                <div class="floating-pill" data-filter="social"><i data-lucide="smile"></i> Chilling</div>
+                <div class="floating-pill" data-filter="food"><i data-lucide="coffee"></i> Food</div>
+                <div class="floating-pill" data-filter="help"><i data-lucide="help-circle"></i> Talk</div>
+            </div>
+
+            <!-- Ghost Mode Disguise Banner -->
+            <div id="ghost-mode-banner" style="display: none; position: absolute; top: 90px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(255, 42, 116, 0.95); padding: 10px 24px; border-radius: 30px; font-weight: 700; color: white; font-size: 0.85rem; align-items: center; gap: 8px; box-shadow: 0 4px 15px var(--primary-glow); font-family: 'Poppins', sans-serif;">
+                <i data-lucide="ghost" style="width: 16px; height: 16px; animation: markerPulse 1.5s infinite;"></i>
+                <span>Ghost Mode: Disguised as "SpecterGhost"</span>
+            </div>
+
+            <!-- Floating map controls (desktop only) -->
+            <div class="map-overlay-controls desktop-sidebar-controls">
+                <button class="btn-icon map-control-btn" id="btn-dashboard-ghost-desktop" title="Toggle Ghost Mode" style="border-radius: 50%; font-size: 1.2rem;">
+                    <i data-lucide="ghost"></i>
+                </button>
+                <button class="btn-icon map-control-btn" id="btn-recenter" title="Recenter Location">
+                    <i data-lucide="locate"></i>
+                </button>
+                <button class="btn-primary map-control-btn" id="btn-post-vibe" style="border-radius: 50%; width: 56px; height: 56px; padding:0; display:flex; align-items:center; justify-content:center;" title="Share your dress code & feeling">
+                    <i data-lucide="plus" style="width:28px; height:28px;"></i>
+                </button>
+            </div>
+
+            <!-- Mobile FAB: Post Vibe -->
+            <button class="mobile-fab" id="btn-post-vibe-mobile" title="Share Vibe">
+                <i data-lucide="plus"></i>
+            </button>
+
+            <!-- Mobile Recenter -->
+            <button class="mobile-recenter" id="btn-recenter-mobile" title="Recenter">
+                <i data-lucide="locate"></i>
+            </button>
+        </div>
+
+        <!-- ===== MOBILE BOTTOM NAV BAR ===== -->
+        <nav class="mobile-bottom-nav">
+            <button class="mob-nav-btn active" id="mob-nav-map" onclick="app.showMobilePanel('map')">
+                <i data-lucide="map"></i>
+                <span>Map</span>
+            </button>
+            <button class="mob-nav-btn" id="mob-nav-chats" onclick="app.showMobilePanel('chats')">
+                <i data-lucide="message-circle"></i>
+                <span>Chats</span>
+                <span class="mob-nav-badge" id="mob-chat-badge" style="display:none;">0</span>
+            </button>
+            <button class="mob-nav-btn" id="mob-nav-vibes" onclick="app.showMobilePanel('vibes')">
+                <i data-lucide="radio"></i>
+                <span>Vibes</span>
+            </button>
+            <button class="mob-nav-btn" id="mob-nav-profile" onclick="app.showMobilePanel('profile')">
+                <i data-lucide="user-circle"></i>
+                <span>Profile</span>
+            </button>
+        </nav>
+
+        <!-- ===== MOBILE BOTTOM SHEETS ===== -->
+        <!-- Chats Bottom Sheet -->
+        <div class="mobile-sheet" id="mobile-sheet-chats">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>Conversations</h3>
+                <button class="sheet-close" onclick="app.showMobilePanel('map')"><i data-lucide="x"></i></button>
+            </div>
+            <div class="sheet-body">
+                <div class="chats-list" id="mobile-chats-container"></div>
+                <div class="empty-state" id="mobile-chats-empty">
+                    <i data-lucide="message-square-dashed"></i>
+                    <p>No active conversations.<br>Tap a user on the map to start chatting.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vibes Bottom Sheet -->
+        <div class="mobile-sheet" id="mobile-sheet-vibes">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>Nearby Vibes</h3>
+                <button class="sheet-close" onclick="app.showMobilePanel('map')"><i data-lucide="x"></i></button>
+            </div>
+            <div class="sheet-body">
+                <div class="vibes-list" id="mobile-vibes-container"></div>
+                <div class="empty-state" id="mobile-vibes-empty">
+                    <i data-lucide="radar"></i>
+                    <p>No vibes nearby.<br>Be the first!</p>
+                </div>
+            </div>
+            <div class="sheet-footer">
+                <button class="btn-primary" style="width:100%; padding: 14px;" onclick="app.openVibeModal()">
+                    <i data-lucide="plus"></i> Share My Vibe
+                </button>
+            </div>
+        </div>
+
+        <!-- Profile Bottom Sheet -->
+        <div class="mobile-sheet" id="mobile-sheet-profile">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>My Profile</h3>
+                <button class="sheet-close" onclick="app.showMobilePanel('map')"><i data-lucide="x"></i></button>
+            </div>
+            <div class="sheet-body">
+                <div class="profile-sheet-card" id="mobile-profile-content">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+            <div class="sheet-footer">
+                <button class="btn-secondary" style="width:100%; padding:14px;" id="btn-ghost-mobile-sheet" onclick="app.toggleGhostMode()">
+                    <i data-lucide="ghost"></i> Toggle Ghost Mode
+                </button>
+                <button class="btn-secondary" style="width:100%; padding:14px; margin-top:8px; border-color: rgba(255,255,255,0.15);" onclick="app.handleLogout()">
+                    <i data-lucide="log-out"></i> Leave AlmostMet
+                </button>
+            </div>
+        </div>
+
+        <!-- Sheet Backdrop -->
+        <div class="sheet-backdrop" id="sheet-backdrop" onclick="app.showMobilePanel('map')"></div>
+
+        <!-- Chat Drawer (Slides in from right / full screen on mobile) -->
+        <div class="chat-drawer" id="chat-drawer">
+            <div class="chat-drawer-header">
+                <button class="btn-icon" id="btn-close-chat" style="border-radius: 12px; width: 36px; height: 36px;">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+                <div class="user-profile-summary">
+                    <div class="user-avatar-circle" id="chat-partner-avatar" style="background-color: var(--primary); width: 38px; height: 38px; font-size:1.1rem;">🦊</div>
+                    <div class="user-meta-info">
+                        <span class="user-anon-name" id="chat-partner-name">PartnerName</span>
+                        <span class="user-status-text" id="chat-partner-vibe" style="color: var(--text-muted); font-size:0.75rem;">Feeling: Nearby</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages-box">
+                <!-- Loaded dynamically -->
+            </div>
+
+            <div class="chat-drawer-footer">
+                <div class="chat-input-wrapper">
+                    <input type="text" class="chat-input" id="chat-input-field" placeholder="Send an anonymous message...">
+                    <button class="send-msg-btn" id="btn-send-message">
+                        <i data-lucide="send-horizontal" style="width:16px; height:16px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. MODAL: POST VIBE -->
+    <div class="modal" id="modal-post-vibe">
+        <div class="modal-content">
+            <button class="modal-close" id="btn-close-modal"><i data-lucide="x"></i></button>
+            <h3 class="modal-title">Share Your Vibe</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- 1. Feeling Tag selection -->
+                <div class="form-group">
+                    <label>How are you feeling?</label>
+                    <div class="vibe-tag-selector" id="vibe-feeling-selector">
+                        <div class="vibe-tag-pill active" data-feeling="social" data-emoji="😊">😊 Chilling</div>
+                        <div class="vibe-tag-pill" data-feeling="food" data-emoji="🍕">🍕 Hungry</div>
+                        <div class="vibe-tag-pill" data-feeling="social" data-emoji="💃">💃 Ready to Party</div>
+                        <div class="vibe-tag-pill" data-feeling="food" data-emoji="☕">☕ Coffee Break</div>
+                        <div class="vibe-tag-pill" data-feeling="help" data-emoji="💭">💭 Up for Talk</div>
+                        <div class="vibe-tag-pill" data-feeling="help" data-emoji="😔">😔 Need a Friend</div>
+                    </div>
+                </div>
+
+                <!-- 2. Dress Code Input -->
+                <div class="form-group">
+                    <label for="vibe-dress">Dress Code clue (What are you wearing?)</label>
+                    <input type="text" id="vibe-dress" placeholder="e.g. Pink hoodie and black boots">
+                </div>
+
+                <!-- 3. Short Note / View -->
+                <div class="form-group">
+                    <label for="vibe-thought">Share a view or feelings (Max 80 chars)</label>
+                    <input type="text" id="vibe-thought" placeholder="e.g. Sitting by the fountain, listening to jazz. Say hi!" maxlength="80">
+                </div>
+
+                <button class="btn-primary" id="btn-submit-vibe" style="margin-top: 10px;">Cast Vibe on Map</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Socket.io Client (served by our Node.js server) -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Core Application logic -->
+    <script src="app.js"></script>
+</body>
+</html>
