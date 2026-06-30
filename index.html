@@ -190,27 +190,20 @@
 
                 <div class="anon-customizer">
                     <span class="customizer-title">Select Anime Avatar</span>
-                    <div class="customizer-preview">
-                        <div class="avatar-preview-box" id="avatar-preview" style="background-color: var(--primary); padding: 0; overflow: hidden; border-radius: 50%; border: 2px solid white; width: 68px; height: 68px;">
-                            <img src="assets/avatar_male_1.jpg" id="avatar-preview-img" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-                            <!-- Anime Avatars Grid Selector -->
-                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                <button class="btn-icon avatar-select active" style="width:40px; height:40px; padding:0; overflow:hidden; border-radius: 50%;" data-src="assets/avatar_male_1.jpg">
-                                    <img src="assets/avatar_male_1.jpg" style="width:100%; height:100%; object-fit:cover;">
+                    <div class="avatar-preview" id="avatar-preview-box" style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary); margin: 0 auto 12px; background: var(--bg-dark);">
+                                <img src="assets/realistic_male.jpg" id="avatar-preview-img" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block; text-align: center;">Select Your Vibe Avatar</label>
+                            
+                            <div class="d-flex flex-row justify-content-center" style="gap: 12px; margin-bottom: 12px;">
+                                <button class="btn-icon avatar-select active" style="width:44px; height:44px; padding:0; overflow:hidden; border-radius: 50%; border: 2px solid transparent;" data-src="assets/realistic_male.jpg">
+                                    <img src="assets/realistic_male.jpg" style="width:100%; height:100%; object-fit:cover;">
                                 </button>
-                                <button class="btn-icon avatar-select" style="width:40px; height:40px; padding:0; overflow:hidden; border-radius: 50%;" data-src="assets/avatar_female_1.jpg">
-                                    <img src="assets/avatar_female_1.jpg" style="width:100%; height:100%; object-fit:cover;">
-                                </button>
-                                <button class="btn-icon avatar-select" style="width:40px; height:40px; padding:0; overflow:hidden; border-radius: 50%;" data-src="assets/avatar_male_2.jpg">
-                                    <img src="assets/avatar_male_2.jpg" style="width:100%; height:100%; object-fit:cover;">
-                                </button>
-                                <button class="btn-icon avatar-select" style="width:40px; height:40px; padding:0; overflow:hidden; border-radius: 50%;" data-src="assets/avatar_female_2.jpg">
-                                    <img src="assets/avatar_female_2.jpg" style="width:100%; height:100%; object-fit:cover;">
+                                <button class="btn-icon avatar-select" style="width:44px; height:44px; padding:0; overflow:hidden; border-radius: 50%; border: 2px solid transparent;" data-src="assets/realistic_female.jpg">
+                                    <img src="assets/realistic_female.jpg" style="width:100%; height:100%; object-fit:cover;">
                                 </button>
                             </div>
-                            <!-- Color Selector dots -->
+                    <!-- Color Selector dots -->
                             <div class="avatar-color-options">
                                 <div class="color-dot active" style="background-color: #ff2a74;" data-color="#ff2a74"></div>
                                 <div class="color-dot" style="background-color: #7c3aed;" data-color="#7c3aed"></div>
@@ -430,18 +423,58 @@
                         <span class="user-status-text" id="chat-partner-vibe" style="color: var(--text-muted); font-size:0.75rem;">Feeling: Nearby</span>
                     </div>
                 </div>
+                <button class="btn-icon" id="btn-music-sync" style="border-radius: 12px; width: 36px; height: 36px;" title="Listen Together">
+                    <i data-lucide="music" style="width:18px; height:18px;"></i>
+                </button>
+            </div>
+
+            <!-- YouTube Listen Together Panel (hidden by default) -->
+            <div class="yt-sync-panel" id="yt-sync-panel" style="display:none;">
+                <div class="yt-sync-input-row" id="yt-input-row">
+                    <input type="text" id="yt-url-input" placeholder="Paste YouTube link to listen together..." class="chat-input" style="font-size:0.8rem;">
+                    <button class="send-msg-btn" id="btn-yt-share" style="background:var(--primary);">
+                        <i data-lucide="play" style="width:14px; height:14px;"></i>
+                    </button>
+                </div>
+                <div id="yt-player-container" style="display:none;">
+                    <div id="yt-player"></div>
+                    <div class="yt-sync-status" id="yt-sync-status">🎵 Listening together</div>
+                </div>
             </div>
 
             <div class="chat-messages" id="chat-messages-box">
                 <!-- Loaded dynamically -->
             </div>
 
+            <!-- Emoji Picker Panel (hidden, slides up above footer) -->
+            <div class="emoji-picker-panel" id="emoji-picker-panel" style="display:none;">
+                <div class="emoji-categories" id="emoji-categories">
+                    <button class="emoji-cat-btn active" data-cat="smileys">😊</button>
+                    <button class="emoji-cat-btn" data-cat="gestures">👋</button>
+                    <button class="emoji-cat-btn" data-cat="hearts">❤️</button>
+                    <button class="emoji-cat-btn" data-cat="food">🍕</button>
+                    <button class="emoji-cat-btn" data-cat="activities">🎵</button>
+                    <button class="emoji-cat-btn" data-cat="nature">🌙</button>
+                    <button class="emoji-cat-btn" data-cat="objects">👗</button>
+                </div>
+                <div class="emoji-grid" id="emoji-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
             <div class="chat-drawer-footer">
-                <div class="chat-input-wrapper">
-                    <input type="text" class="chat-input" id="chat-input-field" placeholder="Send an anonymous message...">
-                    <button class="send-msg-btn" id="btn-send-message">
-                        <i data-lucide="send-horizontal" style="width:16px; height:16px;"></i>
+                <input type="file" id="image-file-input" accept="image/*" style="display:none;">
+                <div class="chat-footer-row">
+                    <button class="chat-footer-btn" id="btn-emoji" title="Emoji">😊</button>
+                    <button class="chat-footer-btn" id="btn-attach-image" title="Send Picture">
+                        <i data-lucide="image" style="width:18px; height:18px;"></i>
                     </button>
+                    <div class="chat-input-wrapper">
+                        <input type="text" class="chat-input" id="chat-input-field" placeholder="Message...">
+                        <button class="send-msg-btn" id="btn-send-message">
+                            <i data-lucide="send-horizontal" style="width:16px; height:16px;"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -491,6 +524,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Socket.io Client (served by our Node.js server) -->
     <script src="/socket.io/socket.io.js"></script>
+    <!-- YouTube IFrame API for Listen Together -->
+    <script src="https://www.youtube.com/iframe_api"></script>
     <!-- Core Application logic -->
     <script src="app.js"></script>
 </body>

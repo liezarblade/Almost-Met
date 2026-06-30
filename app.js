@@ -52,6 +52,7 @@ const app = {
             }
         }
         this.setupEventListeners();
+        this.initChatFeatures();
         lucide.createIcons();
 
         // If user already existed, pre-fill login
@@ -156,6 +157,180 @@ const app = {
             if (e.key === 'Enter') this.sendMessage();
         });
         document.getElementById('btn-close-chat').addEventListener('click', () => this.closeChatDrawer());
+    },
+
+    initChatFeatures() {
+        // Emoji Picker Toggle
+        const btnEmoji = document.getElementById('btn-emoji');
+        const emojiPanel = document.getElementById('emoji-picker-panel');
+        if (btnEmoji && emojiPanel) {
+            btnEmoji.addEventListener('click', () => {
+                const isHidden = emojiPanel.style.display === 'none';
+                emojiPanel.style.display = isHidden ? 'flex' : 'none';
+                btnEmoji.classList.toggle('active', isHidden);
+                if (isHidden && document.getElementById('emoji-grid').children.length === 0) {
+                    this.populateEmojiGrid('smileys'); // load default
+                }
+            });
+        }
+
+        // Emoji Categories
+        document.querySelectorAll('.emoji-cat-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.emoji-cat-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                this.populateEmojiGrid(e.currentTarget.dataset.cat);
+            });
+        });
+
+        // Image Attachment
+        const btnAttach = document.getElementById('btn-attach-image');
+        const fileInput = document.getElementById('image-file-input');
+        if (btnAttach && fileInput) {
+            btnAttach.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => this.handleImageUpload(e));
+        }
+
+        // YouTube Music Sync Toggle
+        const btnMusic = document.getElementById('btn-music-sync');
+        const ytPanel = document.getElementById('yt-sync-panel');
+        if (btnMusic && ytPanel) {
+            btnMusic.addEventListener('click', () => {
+                ytPanel.style.display = ytPanel.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+
+        const btnYtShare = document.getElementById('btn-yt-share');
+        const ytInput = document.getElementById('yt-url-input');
+        if (btnYtShare && ytInput) {
+            btnYtShare.addEventListener('click', () => {
+                const url = ytInput.value.trim();
+                const videoId = this.extractYouTubeId(url);
+                if (videoId && this.state.activeChatPartnerId) {
+                    this.loadYouTubeVideo(videoId);
+                    if (this.state.socket) {
+                        this.state.socket.emit('music:share', {
+                            toUserId: this.state.activeChatPartnerId,
+                            videoId: videoId
+                        });
+                    }
+                    ytInput.value = '';
+                }
+            });
+        }
+    },
+
+    populateEmojiGrid(category) {
+        const grid = document.getElementById('emoji-grid');
+        grid.innerHTML = '';
+        
+        const emojis = {
+            smileys: ['😀','😂','🥰','😎','🤔','😴','😭','😡','🤯','🥳','🥶','🤢'],
+            gestures: ['👍','👎','👋','🙌','🤝','🙏','💪','🖕','🤙','🖖'],
+            hearts: ['❤️','💔','💕','💖','💗','💙','💚','💛','💜','🖤'],
+            food: ['🍔','🍕','🍟','🍩','🍦','🍭','🍎','🍇','🍉','🍷','🍻','☕'],
+            activities: ['⚽','🏀','🎮','🎵','🎸','🎬','🎤','🎧','🎨','🚴'],
+            nature: ['🌞','🌙','⭐','🔥','💧','🌲','🌸','🌺','🍀','🐶','🐱','🐼'],
+            objects: ['📱','💻','⌚','👗','👔','👟','👑','💍','💄','🚗','✈️','🚀']
+        };
+
+        const list = emojis[category] || emojis.smileys;
+        list.forEach(emoji => {
+            const span = document.createElement('span');
+            span.textContent = emoji;
+            span.addEventListener('click', () => {
+                const input = document.getElementById('chat-input-field');
+                input.value += emoji;
+                input.focus();
+            });
+            grid.appendChild(span);
+        });
+    },
+
+    handleImageUpload(e) {
+        const file = e.target.files[0];
+        if (!file || !this.state.activeChatPartnerId) return;
+
+        // Basic validation and compression logic here
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const imgData = ev.target.result;
+            this.sendImageMessage(imgData);
+        };
+        reader.readAsDataURL(file);
+        e.target.value = ''; // reset
+    },
+
+    sendImageMessage(imageData) {
+        const partnerId = this.state.activeChatPartnerId;
+        if (!partnerId) return;
+
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        this.state.chats[partnerId].push({
+            sender: 'me',
+            type: 'image',
+            imageData: imageData,
+            timestamp: timestamp
+        });
+
+        this.renderChatMessages();
+        this.saveStateToLocalStorage();
+
+        if (this.state.socket) {
+            this.state.socket.emit('chat:image', {
+                toUserId: partnerId,
+                imageData: imageData
+            });
+        }
+    },
+
+    extractYouTubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    },
+
+    loadYouTubeVideo(videoId) {
+        document.getElementById('yt-input-row').style.display = 'none';
+        document.getElementById('yt-player-container').style.display = 'block';
+
+        if (window.YT && window.YT.Player) {
+            if (this.state.ytPlayer) {
+                this.state.ytPlayer.loadVideoById(videoId);
+            } else {
+                this.state.ytPlayer = new window.YT.Player('yt-player', {
+                    height: '180',
+                    width: '100%',
+                    videoId: videoId,
+                    playerVars: { 'autoplay': 1, 'controls': 1 },
+                    events: {
+                        'onStateChange': this.onPlayerStateChange.bind(this)
+                    }
+                });
+            }
+        }
+    },
+
+    onPlayerStateChange(event) {
+        // -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (video cued)
+        if (!this.state.socket || !this.state.activeChatPartnerId) return;
+
+        const time = event.target.getCurrentTime();
+        
+        if (event.data == window.YT.PlayerState.PLAYING) {
+            this.state.socket.emit('music:sync', {
+                toUserId: this.state.activeChatPartnerId,
+                action: 'play',
+                time: time
+            });
+        } else if (event.data == window.YT.PlayerState.PAUSED) {
+            this.state.socket.emit('music:sync', {
+                toUserId: this.state.activeChatPartnerId,
+                action: 'pause',
+                time: time
+            });
+        }
     },
 
     // -------------------------------------------------------------
@@ -759,9 +934,55 @@ const app = {
 
             this.renderChatsSidebar();
             this.saveStateToLocalStorage();
-
-            // Update mobile chat badge
             this.updateChatBadge();
+        });
+
+        // Incoming image from another user
+        socket.on('chat:image', ({ fromUserId, fromUsername, imageData, timestamp }) => {
+            console.log('[AlmostMet] Image from', fromUsername);
+            
+            if (!this.state.chats[fromUserId]) {
+                this.state.chats[fromUserId] = [];
+            }
+
+            this.state.chats[fromUserId].push({
+                sender: 'them',
+                type: 'image',
+                imageData: imageData,
+                timestamp: timestamp,
+                unread: true
+            });
+
+            if (this.state.activeChatPartnerId === fromUserId) {
+                this.renderChatMessages();
+                const msgs = this.state.chats[fromUserId];
+                if (msgs.length > 0) msgs[msgs.length - 1].unread = false;
+            }
+
+            this.renderChatsSidebar();
+            this.saveStateToLocalStorage();
+            this.updateChatBadge();
+        });
+
+        // Incoming music sync events
+        socket.on('music:share', ({ fromUserId, videoId }) => {
+            if (this.state.activeChatPartnerId === fromUserId) {
+                document.getElementById('yt-sync-panel').style.display = 'block';
+                this.loadYouTubeVideo(videoId);
+            }
+        });
+
+        socket.on('music:sync', ({ fromUserId, action, time }) => {
+            if (this.state.activeChatPartnerId === fromUserId && this.state.ytPlayer) {
+                if (action === 'play') {
+                    if (time !== undefined && Math.abs(this.state.ytPlayer.getCurrentTime() - time) > 2) {
+                        this.state.ytPlayer.seekTo(time);
+                    }
+                    this.state.ytPlayer.playVideo();
+                } else if (action === 'pause') {
+                    this.state.ytPlayer.pauseVideo();
+                }
+            }
         });
 
         // Handle disconnect
@@ -1050,13 +1271,36 @@ const app = {
         }
 
         messages.forEach(msg => {
-            const bubble = document.createElement('div');
-            bubble.classList.add('message-bubble', msg.sender === 'me' ? 'outgoing' : 'incoming');
-            bubble.textContent = msg.text;
-
             const group = document.createElement('div');
             group.classList.add('chat-message-group');
-            group.appendChild(bubble);
+
+            if (msg.type === 'image') {
+                const img = document.createElement('img');
+                img.src = msg.imageData;
+                img.classList.add('message-image');
+                
+                const bubble = document.createElement('div');
+                bubble.classList.add('message-bubble', 'image-bubble', msg.sender === 'me' ? 'outgoing' : 'incoming');
+                bubble.appendChild(img);
+                
+                // Full screen preview on click
+                img.addEventListener('click', () => {
+                    const overlay = document.createElement('div');
+                    overlay.classList.add('image-preview-overlay');
+                    const fullImg = document.createElement('img');
+                    fullImg.src = msg.imageData;
+                    overlay.appendChild(fullImg);
+                    overlay.addEventListener('click', () => overlay.remove());
+                    document.body.appendChild(overlay);
+                });
+
+                group.appendChild(bubble);
+            } else {
+                const bubble = document.createElement('div');
+                bubble.classList.add('message-bubble', msg.sender === 'me' ? 'outgoing' : 'incoming');
+                bubble.textContent = msg.text;
+                group.appendChild(bubble);
+            }
 
             chatBox.appendChild(group);
         });

@@ -110,6 +110,53 @@ io.on('connection', (socket) => {
         }
     });
 
+    // ----- CHAT IMAGE -----
+    socket.on('chat:image', ({ toUserId, imageData }) => {
+        const fromUserId = socketToUser.get(socket.id);
+        if (!fromUserId || !toUserId || !imageData) return;
+
+        const sender = connectedUsers.get(fromUserId);
+        if (!sender) return;
+
+        const targetSocketId = userSockets.get(toUserId);
+        if (targetSocketId) {
+            const timestamp = new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            io.to(targetSocketId).emit('chat:image', {
+                fromUserId,
+                fromUsername: sender.username,
+                imageData,
+                timestamp
+            });
+
+            console.log(`[IMAGE] ${sender.username} → ${toUserId}: image sent`);
+        }
+    });
+
+    // ----- YOUTUBE MUSIC SYNC -----
+    socket.on('music:share', ({ toUserId, videoId }) => {
+        const fromUserId = socketToUser.get(socket.id);
+        if (!fromUserId) return;
+        const targetSocketId = userSockets.get(toUserId);
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('music:share', { fromUserId, videoId });
+        }
+        console.log(`[MUSIC] ${fromUserId} shared YouTube video with ${toUserId}`);
+    });
+
+    socket.on('music:sync', ({ toUserId, action, time }) => {
+        const fromUserId = socketToUser.get(socket.id);
+        if (!fromUserId) return;
+        const targetSocketId = userSockets.get(toUserId);
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('music:sync', { fromUserId, action, time });
+        }
+    });
+
+
     // ----- GHOST MODE TOGGLE -----
     socket.on('user:ghost', (isGhost) => {
         const userId = socketToUser.get(socket.id);
